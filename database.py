@@ -1,7 +1,17 @@
 import sqlite3
 import os
+from dotenv import load_dotenv
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "reservation.db")
+# Load environment variables from .env if present
+load_dotenv()
+
+# Determine SQLite database path from environment variable or default
+_db_env = os.getenv("DATABASE_PATH", "reservation.db")
+if os.path.isabs(_db_env):
+    DB_PATH = _db_env
+else:
+    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), _db_env)
+
 TOTAL_SEATS = 10
 
 # Realistic seat metadata

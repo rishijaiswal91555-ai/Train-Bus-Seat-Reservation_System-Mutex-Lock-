@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from database import (
     init_db,
@@ -13,8 +15,11 @@ from mutex import (
     run_simultaneous_passenger_test
 )
 
+# Load environment variables from .env if present
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "reservation_com_bus_train_mutex_demo_key"
+app.secret_key = os.getenv("SECRET_KEY", "reservation_com_bus_train_mutex_demo_key")
 
 # Initialize database table and composite constraints on startup
 init_db()
@@ -129,5 +134,7 @@ def api_test_mutex():
     return jsonify(run_mutex_test())
 
 if __name__ == "__main__":
-    # Run the Flask app on localhost:5000
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    # Support dynamic PORT environment variable (standard for cloud platforms like Render)
+    port = int(os.getenv("PORT", 5000))
+    debug_mode = os.getenv("FLASK_DEBUG", "True").lower() in ("true", "1", "yes")
+    app.run(host="0.0.0.0", port=port, debug=debug_mode)
