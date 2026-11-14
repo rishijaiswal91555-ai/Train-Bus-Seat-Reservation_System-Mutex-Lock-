@@ -1,0 +1,181 @@
+/* General Styling */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #333333;
+}
+
+#wrapper {
+    min-height: 100vh;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar .list-group-item {
+    border: none;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    transition: background 0.2s ease;
+}
+
+.sidebar .list-group-item:hover {
+    background-color: #2b3035 !important;
+    color: #ffffff !important;
+}
+
+.sidebar .list-group-item.active {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+/* Stat Cards */
+.stat-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    border-radius: 10px;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08) !important;
+}
+
+.stat-icon {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+
+/* Visual Seat Layout */
+.vehicle-coach-box {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+}
+
+.bus-container {
+    border-color: #0d6efd40;
+}
+
+.train-container {
+    border-color: #0dcaf040;
+}
+
+.vehicle-header {
+    font-size: 0.85rem;
+}
+
+.small-berth-badge {
+    font-size: 0.65rem;
+    font-weight: 500;
+    display: inline-block;
+    padding: 2px 5px;
+    border-radius: 4px;
+}
+
+.seat-card {
+    border: 2px solid transparent;
+    cursor: default;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.seat-card .seat-icon {
+    font-size: 1.35rem;
+    display: block;
+}
+
+.seat-card .seat-label {
+    font-size: 0.72rem;
+}
+
+.seat-available {
+    background-color: #198754 !important;
+    color: #ffffff;
+}
+
+.seat-available.clickable-seat {
+    cursor: pointer;
+}
+
+.seat-available.clickable-seat:hover {
+    filter: brightness(1.1);
+    transform: scale(1.05);
+}
+
+.seat-card.seat-selected {
+    border: 3px solid #0d6efd !important;
+    box-shadow: 0 0 10px rgba(13, 110, 253, 0.6);
+    transform: scale(1.05);
+}
+
+.seat-booked {
+    background-color: #dc3545 !important;
+    color: #ffffff;
+}
+
+.seat-legend-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+/* Thread Execution Log Console */
+#demo-execution-logs,
+#sim-execution-logs {
+    max-height: 180px;
+    overflow-y: auto;
+    line-height: 1.5;
+}
+
+.log-line {
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+}
+
+.log-line:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.log-t1 {
+    color: #5bc0de;
+}
+
+.log-t2 {
+    color: #f0ad4e;
+}
+
+.log-success {
+    color: #5cb85c;
+    font-weight: bold;
+}
+
+.log-fail {
+    color: #d9534f;
+    font-weight: bold;
+}
+
+.log-mutex {
+    color: #9d80ff;
+}
+
+/* Responsive adjustment */
+@media (max-width: 768px) {
+    #wrapper {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+    }
+}

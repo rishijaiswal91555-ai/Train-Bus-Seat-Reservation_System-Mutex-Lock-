@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation.com – Seat Booking</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="bg-light">
+
+<div class="d-flex" id="wrapper">
+    <!-- Sidebar Navigation -->
+    <div class="bg-dark text-white p-3 sidebar" id="sidebar-wrapper">
+        <div class="sidebar-heading pb-3 mb-3 border-bottom text-center">
+            <i class="bi bi-ticket-perforated-fill fs-3 text-primary"></i>
+            <h5 class="mt-2 mb-0 fw-bold">Reservation.com</h5>
+            <small class="text-secondary">Confirm Booking Assured</small>
+        </div>
+        <div class="list-group list-group-flush">
+            <a href="{{ url_for('dashboard') }}" class="list-group-item list-group-item-action bg-dark text-white-50">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+            <a href="{{ url_for('booking') }}" class="list-group-item list-group-item-action bg-dark text-white active">
+                <i class="bi bi-ticket-perforated me-2"></i> Seat Booking
+            </a>
+            <a href="{{ url_for('dashboard') }}#simultaneous-demo-section" class="list-group-item list-group-item-action bg-dark text-white-50">
+                <i class="bi bi-people me-2"></i> Simultaneous Demo
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div id="page-content-wrapper" class="w-100">
+        <!-- Top Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 py-3">
+            <div class="container-fluid p-0">
+                <div>
+                    <h4 class="mb-0 fw-bold text-dark">
+                        <i class="bi bi-ticket-perforated me-2 text-primary"></i>
+                        Seat Booking
+                    </h4>
+                    <small class="text-muted">Confirm Booking Assured – Train & Bus Tickets</small>
+                </div>
+                <div class="ms-auto">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-dark btn-sm px-3">
+                        <i class="bi bi-arrow-left me-1"></i> Return to Dashboard
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Body Container -->
+        <div class="container-fluid p-4">
+
+            <!-- Flash Alert Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="row g-4 justify-content-center">
+                <!-- Visual Seat Selector (Bus & Train) -->
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-bottom py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <h5 class="card-title mb-0 fw-bold">
+                                    <i class="bi bi-hand-index-thumb me-1 text-primary"></i> Step 1: Select Seat
+                                </h5>
+                                <!-- Transport Toggle -->
+                                <div class="btn-group btn-group-sm ms-2" role="group">
+                                    <button type="button" class="btn {% if selected_type == 'Bus' %}btn-primary{% else %}btn-outline-secondary{% endif %} fw-semibold" id="booking-tab-bus">
+                                        <i class="bi bi-bus-front me-1"></i> Bus
+                                    </button>
+                                    <button type="button" class="btn {% if selected_type == 'Train' %}btn-primary{% else %}btn-outline-secondary{% endif %} fw-semibold" id="booking-tab-train">
+                                        <i class="bi bi-train-front me-1"></i> Train
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3 small">
+                                <span><span class="seat-legend-dot bg-success"></span> Available (Clickable)</span>
+                                <span><span class="seat-legend-dot bg-danger"></span> Booked (Disabled)</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- BUS SEAT LAYOUT -->
+                            <div id="booking-bus-layout" class="booking-transport-layout {% if selected_type != 'Bus' %}d-none{% endif %}">
+                                <p class="text-muted small mb-2">
+                                    Click any available green seat in the Deluxe Bus Coach:
+                                </p>
+                                <div class="vehicle-coach-box bus-container p-3 rounded mb-3">
+                                    <div class="vehicle-header d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                        <span class="fw-bold text-muted small"><i class="bi bi-bus-front me-1"></i> Deluxe Coach (Seats B1 - B10)</span>
+                                        <span class="badge bg-secondary-subtle text-dark small"><i class="bi bi-compass me-1"></i> Driver Cabin</span>
+                                    </div>
+                                    <div class="row g-2 justify-content-center">
+                                        {% for seat in bus_data.seats %}
+                                            <div class="col-md-2 col-sm-4 col-4">
+                                                {% if seat.is_booked %}
+                                                    <div class="seat-card p-2 rounded text-center seat-booked bg-danger text-white opacity-75"
+                                                         style="cursor: not-allowed;"
+                                                         title="Seat {{ seat.label }} is already booked by {{ seat.passenger_name }}">
+                                                        <i class="bi bi-lock-fill seat-icon"></i>
+                                                        <div class="fw-bold fs-6 mt-1">{{ seat.label }}</div>
+                                                        <span class="badge bg-black bg-opacity-25 small-berth-badge">{{ seat.berth }}</span>
+                                                        <small class="seat-label d-block text-truncate mt-1">Booked</small>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="seat-card p-2 rounded text-center seat-available bg-success text-white clickable-seat"
+                                                         data-transport="Bus"
+                                                         data-seat-number="{{ seat.seat_number }}"
+                                                         data-seat-label="{{ seat.label }}"
+                                                         id="seat-btn-bus-{{ seat.seat_number }}"
+                                                         title="Click to select Bus Seat {{ seat.label }} ({{ seat.berth }})">
+                                                        <i class="bi bi-person seat-icon"></i>
+                                                        <div class="fw-bold fs-6 mt-1">{{ seat.label }}</div>
+                                                        <span class="badge bg-black bg-opacity-25 small-berth-badge">{{ seat.berth }}</span>
+                                                        <small class="seat-label d-block text-truncate mt-1">Available</small>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TRAIN SEAT LAYOUT -->
+                            <div id="booking-train-layout" class="booking-transport-layout {% if selected_type != 'Train' %}d-none{% endif %}">
+                                <p class="text-muted small mb-2">
+                                    Click any available green berth in the Train Coach:
+                                </p>
+                                <div class="vehicle-coach-box train-container p-3 rounded mb-3">
+                                    <div class="vehicle-header d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                                        <span class="fw-bold text-muted small"><i class="bi bi-train-front me-1"></i> Coach B1 (Berths T1 - T10)</span>
+                                        <span class="badge bg-secondary-subtle text-dark small"><i class="bi bi-arrow-right-circle me-1"></i> Engine / Forward</span>
+                                    </div>
+                                    <div class="row g-2 justify-content-center">
+                                        {% for seat in train_data.seats %}
+                                            <div class="col-md-2 col-sm-4 col-4">
+                                                {% if seat.is_booked %}
+                                                    <div class="seat-card p-2 rounded text-center seat-booked bg-danger text-white opacity-75"
+                                                         style="cursor: not-allowed;"
+                                                         title="Berth {{ seat.label }} is already booked by {{ seat.passenger_name }}">
+                                                        <i class="bi bi-lock-fill seat-icon"></i>
+                                                        <div class="fw-bold fs-6 mt-1">{{ seat.label }}</div>
+                                                        <span class="badge bg-black bg-opacity-25 small-berth-badge">{{ seat.berth }}</span>
+                                                        <small class="seat-label d-block text-truncate mt-1">Booked</small>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="seat-card p-2 rounded text-center seat-available bg-success text-white clickable-seat"
+                                                         data-transport="Train"
+                                                         data-seat-number="{{ seat.seat_number }}"
+                                                         data-seat-label="{{ seat.label }}"
+                                                         id="seat-btn-train-{{ seat.seat_number }}"
+                                                         title="Click to select Train Berth {{ seat.label }} ({{ seat.berth }})">
+                                                        <i class="bi bi-person seat-icon"></i>
+                                                        <div class="fw-bold fs-6 mt-1">{{ seat.label }}</div>
+                                                        <span class="badge bg-black bg-opacity-25 small-berth-badge">{{ seat.berth }}</span>
+                                                        <small class="seat-label d-block text-truncate mt-1">Available</small>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info py-2 small mb-0">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Red seats are already reserved and cannot be selected.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Form -->
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-bottom py-3">
+                            <h5 class="card-title mb-0 fw-bold">
+                                <i class="bi bi-clipboard2-check me-2 text-primary"></i> Step 2: Passenger Details
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <form action="{{ url_for('booking') }}" method="POST" id="booking-form">
+                                <!-- Ticket Type Field -->
+                                <div class="mb-3">
+                                    <label for="form_ticket_type" class="form-label fw-semibold">
+                                        Ticket Type <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="bi bi-ticket-detailed"></i></span>
+                                        <select class="form-select" id="form_ticket_type" name="ticket_type" required>
+                                            <option value="Bus" {% if selected_type == 'Bus' %}selected{% endif %}>Bus Ticket</option>
+                                            <option value="Train" {% if selected_type == 'Train' %}selected{% endif %}>Train Ticket</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Seat Number Field -->
+                                <div class="mb-3">
+                                    <label for="seat_number" class="form-label fw-semibold">
+                                        Selected Seat / Berth <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
+                                        <select class="form-select" id="seat_number" name="seat_number" required>
+                                            <option value="" disabled selected>-- Select a Seat --</option>
+                                            <!-- Dynamically populated options -->
+                                        </select>
+                                    </div>
+                                    <div class="form-text small">Clicking a seat on the layout will auto-fill this field.</div>
+                                </div>
+
+                                <!-- Passenger Name Field -->
+                                <div class="mb-4">
+                                    <label for="passenger_name" class="form-label fw-semibold">
+                                        Passenger Name <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                                        <input type="text" class="form-control" id="passenger_name" name="passenger_name" placeholder="e.g. Alice Smith" required autocomplete="off">
+                                    </div>
+                                </div>
+
+                                <!-- Submit and Return Buttons -->
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary py-2 fw-semibold">
+                                        <i class="bi bi-check2-circle me-1"></i> Book Seat
+                                    </button>
+                                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary py-2">
+                                        <i class="bi bi-arrow-left me-1"></i> Return to Dashboard
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Embedded Data for Booking Page -->
+<script id="booking-seat-data" type="application/json">
+{{ {"Bus": bus_data, "Train": train_data, "selected_type": selected_type} | tojson }}
+</script>
+<script>
+    (function () {
+        const dataEl = document.getElementById("booking-seat-data");
+        const data = dataEl ? JSON.parse(dataEl.textContent) : {};
+        window.BOOKING_SEAT_DATA = {
+            Bus: data.Bus || {},
+            Train: data.Train || {}
+        };
+        window.SELECTED_TYPE = data.selected_type || "Bus";
+    })();
+</script>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
